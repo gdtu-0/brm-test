@@ -11,7 +11,7 @@ services:
     healthcheck:
       test: pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}
       interval: 30s
-      timeout: 5s
+      timeout: 10s
       retries: 5
     ports:
       - 5432:5432
@@ -27,14 +27,19 @@ services:
       - bootstrap.memory_lock=true # along with the memlock settings below, disables swapping
       - discovery.type=single-node # not running cluster
     ulimits:
-      memlock:
-        soft: -1  # Set memlock to unlimited (no soft or hard limit)
+      memlock: # Set memlock to unlimited (no soft or hard limit)
+        soft: -1
         hard: -1
     logging:
       driver: "json-file"
       options:
         max-size: "100m"
         max-file: "1"
+    healthcheck:
+      test: curl https://127.0.0.1:9200 -k || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 5
     ports:
       - 9200:9200 # REST API
       - 9600:9600 # Performance Analyzer
@@ -48,6 +53,11 @@ services:
       - CLICKHOUSE_USER=${CLICKHOUSE_USER}
       - CLICKHOUSE_PASSWORD=${CLICKHOUSE_PASSWORD}
       - CLICKHOUSE_DB=${CLICKHOUSE_DB}
+    healthcheck:
+      test: wget --no-verbose --tries=1 http://127.0.0.1:8123/ping || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 5
     ports:
       - 8123:8123
       - 8443:8443
