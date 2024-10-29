@@ -1,0 +1,5 @@
+psycopg2
+clickhouse-connect
+opensearch-py
+pandas
+duckdb

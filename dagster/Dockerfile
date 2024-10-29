@@ -3,8 +3,8 @@ FROM python:3.13-alpine
 # Update and upgrade system
 RUN apk -U upgrade
 
-# Docker has rust in dependencies
-RUN apk add rust cargo
+# Install development packages
+RUN apk add gcc make rust cargo libpq-dev
 
 # Install base dagster modules
 RUN pip install --upgrade pip && pip install dagster dagster-webserver
@@ -19,6 +19,10 @@ ENV DAGSTER_APP=/opt/dagster/app
 RUN mkdir -p $DAGSTER_APP
 COPY dagster/workspace.yaml $DAGSTER_APP
 WORKDIR $DAGSTER_APP
+
+# Install requirements
+COPY dagster/requirements.txt $DAGSTER_HOME/requirements.txt
+RUN pip install -r $DAGSTER_HOME/requirements.txt
 
 # Expose dagster webserver port
 EXPOSE 3000
