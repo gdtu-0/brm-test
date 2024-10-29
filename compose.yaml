@@ -9,7 +9,7 @@ services:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     healthcheck:
-      test: pg_isready -U ${TARGET_DB_USER} -d ${TARGET_DB_NAME}
+      test: pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}
       interval: 30s
       timeout: 5s
       retries: 5
