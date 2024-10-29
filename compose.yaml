@@ -1,5 +1,24 @@
 version: '3'
 services:
+  # Dagster
+  dagster:
+    build:
+      context: .
+      dockerfile: dagster/Dockerfile
+    container_name: dagster
+    volumes:
+      - ./dagster/brm_test:/opt/dagster/app/brm_test
+    ports:
+      - 3000:3000
+    networks:
+      - brm_test_network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      opensearch:
+        condition: service_healthy
+      clickhouse:
+        condition: service_healthy
   # PostgreSQL
   postgres:
     image: postgres:latest
