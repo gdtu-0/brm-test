@@ -1,5 +1,22 @@
 version: '3'
 services:
+  # PostgreSQL
+  postgres:
+    image: postgres:latest
+    container_name: postgres
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    healthcheck:
+      test: pg_isready -U ${TARGET_DB_USER} -d ${TARGET_DB_NAME}
+      interval: 30s
+      timeout: 5s
+      retries: 5
+    ports:
+      - 5432:5432
+    networks:
+      - brm_test_network
   # Opensearch
   opensearch:
     image: opensearchproject/opensearch:latest
@@ -21,3 +38,23 @@ services:
     ports:
       - 9200:9200 # REST API
       - 9600:9600 # Performance Analyzer
+    networks:
+      - brm_test_network
+  # Clickhouse
+  clickhouse:
+    image: clickhouse/clickhouse-server:latest
+    container_name: clickhouse
+    environment:
+      - CLICKHOUSE_USER=${CLICKHOUSE_USER}
+      - CLICKHOUSE_PASSWORD=${CLICKHOUSE_PASSWORD}
+      - CLICKHOUSE_DB=${CLICKHOUSE_DB}
+    ports:
+      - 8123:8123
+      - 8443:8443
+      - 9000:9000
+    networks:
+      - brm_test_network
+networks:
+  brm_test_network:
+    driver: bridge
+    name: brm_test_network
