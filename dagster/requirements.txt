@@ -1,5 +1,6 @@
 psycopg2
 clickhouse-connect
 opensearch-py
+pyspark[sql]
 pandas
 duckdb

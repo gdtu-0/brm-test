@@ -1,13 +1,13 @@
-FROM python:3.13-alpine
+FROM ubuntu:22.04
 
 # Update and upgrade system
-RUN apk -U upgrade
+RUN apt -q update && apt -qy upgrade
 
 # Install development packages
-RUN apk add gcc make rust cargo libpq-dev
+RUN apt install -qy pip libpq-dev
 
 # Install base dagster modules
-RUN pip install --upgrade pip && pip install dagster dagster-webserver
+RUN pip install dagster dagster-webserver
 
 # Create dagster home dir
 ENV DAGSTER_HOME=/opt/dagster/dagster_home/
