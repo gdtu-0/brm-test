@@ -4,3 +4,4 @@ opensearch-py
 pyspark[sql]
 pandas
 duckdb
+odfpy
