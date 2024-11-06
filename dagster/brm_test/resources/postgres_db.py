@@ -1,7 +1,7 @@
 import functools
 import psycopg2 # type: ignore
 import psycopg2.extras # type: ignore
-from typing import Optional, List, Tuple
+from typing import Optional
 from dagster import ConfigurableResource
 
 
@@ -79,7 +79,7 @@ class PostgresDB(ConfigurableResource):
     
 
     @handle_connection
-    def exec_insert(self, connection, sql: str, values: List[Tuple]):
+    def exec_insert(self, connection, sql: str, values: list[tuple]):
         """Special case for insert statement"""
 
         with connection.cursor() as cursor:
