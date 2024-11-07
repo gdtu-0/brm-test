@@ -1,10 +1,10 @@
 import os
 import pandas as pd
-from pandas import DataFrame
-from dagster import graph, op, OpExecutionContext
-from ..common.mtable import generate_MTable
+from dagster import asset, AssetExecutionContext
 from ..resources.postgres_db import PostgresDB
+from ..common.mtable import generate_MTable
 from ..common import TABLE_DEFINITIONS
+from ..common.translator import translate_to_where_cond
 
 
 def _list_dir(relpath: str) -> list[str]:
@@ -16,8 +16,8 @@ def _list_dir(relpath: str) -> list[str]:
         out.append(os.path.normpath(f'{str(path)}{str(file)}'))
     return out
 
-@op
-def load_sapmle_data(context: OpExecutionContext, postgres_db: PostgresDB) -> None:
+@asset
+def load_sapmle_data(context: AssetExecutionContext, postgres_db: PostgresDB) -> None:
     """Load data sample as Dataframe"""
 
     table = generate_MTable(table_definition = TABLE_DEFINITIONS['data'], resource = postgres_db)
@@ -29,8 +29,8 @@ def load_sapmle_data(context: OpExecutionContext, postgres_db: PostgresDB) -> No
         df = df.fillna(value='')
         table.insert(df)
 
-@op
-def load_mapping(context: OpExecutionContext, postgres_db: PostgresDB) -> None:
+@asset
+def load_mapping(context: AssetExecutionContext, postgres_db: PostgresDB) -> None:
     """Load mapping file"""
     
     table = generate_MTable(table_definition = TABLE_DEFINITIONS['mapping'], resource = postgres_db)
@@ -40,10 +40,6 @@ def load_mapping(context: OpExecutionContext, postgres_db: PostgresDB) -> None:
         context.log.info(f"Loading {filename}")
         df = pd.read_excel(filename, dtype=str, engine="odf")
         df = df.fillna(value='')
+        for index, row in df.iterrows():
+            translate_to_where_cond(row)
         table.insert(df)
-    
-
-@graph
-def load_data_graph() -> None:
-    load_sapmle_data()
-    load_mapping()
