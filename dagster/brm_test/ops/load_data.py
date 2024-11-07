@@ -17,13 +17,17 @@ def _list_dir(relpath: str) -> list[str]:
     return out
 
 @op
-def load_sapmle_data(context: OpExecutionContext) -> None:
+def load_sapmle_data(context: OpExecutionContext, postgres_db: PostgresDB) -> None:
     """Load data sample as Dataframe"""
 
+    table = generate_MTable(table_definition = TABLE_DEFINITIONS['data'], resource = postgres_db)
+    table.create()
     relpath = '../data/source_data/'
     for filename in _list_dir(relpath):
         context.log.info(f"Loading {filename}")
-        # df = pd.read_excel(filename, engine="odf")
+        df = pd.read_excel(filename, dtype=str, engine="odf")
+        df = df.fillna(value='')
+        table.insert(df)
 
 @op
 def load_mapping(context: OpExecutionContext, postgres_db: PostgresDB) -> None:
@@ -34,7 +38,7 @@ def load_mapping(context: OpExecutionContext, postgres_db: PostgresDB) -> None:
     relpath = '../data/mapping/'
     for filename in _list_dir(relpath):
         context.log.info(f"Loading {filename}")
-        df = pd.read_excel(filename, engine="odf")
+        df = pd.read_excel(filename, dtype=str, engine="odf")
         df = df.fillna(value='')
         table.insert(df)
     

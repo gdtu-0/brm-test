@@ -51,7 +51,9 @@ class MTable_PG(MTable):
         columns_str = ",\n  ".join(f'{name} {specs}' for name, specs in self._table_definition.column_definitions.items())
         create_str = f"CREATE TABLE IF NOT EXISTS {self._table_definition.name} (\n  {columns_str}\n)"
         sql_str = f"{create_str};"
+        self._resource.exec_sql_no_fetch(sql_str)
 
+        sql_str = f"TRUNCATE {self._table_definition.name};"
         self._resource.exec_sql_no_fetch(sql_str)
 
     def insert(self, data: DataFrame):
@@ -60,7 +62,7 @@ class MTable_PG(MTable):
         columns_str = ", ".join(name for name in data.columns)
         insert_str = f"INSERT INTO {self._table_definition.name}\n  ({columns_str})\nVALUES %s"
         sql_str = insert_str
-        
+
         self._resource.exec_insert(sql = sql_str, values = list(data.itertuples(index = False, name = None)))
 
 
