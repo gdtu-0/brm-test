@@ -36,10 +36,13 @@ def load_mapping(context: AssetExecutionContext, postgres_db: PostgresDB) -> Non
     table = generate_MTable(table_definition = TABLE_DEFINITIONS['mapping'], resource = postgres_db)
     table.create()
     relpath = '../data/mapping/'
+    where_cond_column_name = 'where_cond'
     for filename in _list_dir(relpath):
         context.log.info(f"Loading {filename}")
         df = pd.read_excel(filename, dtype=str, engine="odf")
         df = df.fillna(value='')
+        conds = {}
         for index, row in df.iterrows():
-            translate_to_where_cond(row)
+            conds[index] = translate_to_where_cond(row)
+        df[where_cond_column_name] = pd.Series(conds)
         table.insert(df)

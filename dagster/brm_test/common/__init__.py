@@ -6,6 +6,7 @@ TABLE_DEFINITIONS = {
         column_definitions = {
             'map_rule_id': 'numeric',
             'map_rule_row': 'numeric',
+            'where_cond': 'varchar',
             'src_fld_01': 'varchar',
             'src_val_01': 'varchar',
             'src_fld_02': 'varchar',
