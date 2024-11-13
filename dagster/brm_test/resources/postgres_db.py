@@ -13,17 +13,7 @@ class PostgresDB(ConfigurableResource):
     password:str
     host:str
     port:int
-
-    def connect(self):
-        """Connect to database"""
-
-        return psycopg2.connect(
-            dbname = self.dbname,
-            user = self.username,
-            password = self.password,
-            host = self.host,
-            port = self.port
-        )
+    _connection:Optional[object]=None
 
 
     def handle_connection(function):
@@ -31,33 +21,40 @@ class PostgresDB(ConfigurableResource):
 
         @functools.wraps(function)
         def wrapper_handle_connection(self, *args, **kwargs):
-            connection = self.connect()
-            try:
-                value = function(self, connection, *args, **kwargs)
-            finally:
-                connection.close()
+            # We do not explicitly close connection becasue Dagster initializes (and deletes) resources
+            # for every op/asset. So, after op/asset finish resource will be destroyed and GC will
+            # invoke del for resource object witch will close the connection
+            if not self._connection:
+                self._connection = psycopg2.connect(
+                    dbname = self.dbname,
+                    user = self.username,
+                    password = self.password,
+                    host = self.host,
+                    port = self.port
+                )
+            value = function(self, *args, **kwargs)
             return(value)
         return wrapper_handle_connection
 
 
     @handle_connection
-    def table_exists(self, connection, table_name:str) -> bool:
+    def table_exists(self, table_name:str) -> bool:
         """Check if table exists in database"""
 
         sql_str = f"SELECT EXISTS (\n\tSELECT FROM information_schema.tables WHERE table_name = \'{table_name}\'\n);"
 
         exists = False
-        with connection.cursor() as cursor:
+        with self._connection.cursor() as cursor:
             cursor.execute(sql_str)
             exists = cursor.fetchone()[0]
         return(exists)
     
 
     @handle_connection
-    def exec_sql_dict_cursor(self, connection, sql: str) -> Optional[list]:
+    def exec_sql_dict_cursor(self, sql: str) -> Optional[list]:
         """Execute SQL statement with dict cursor"""
 
-        with connection.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+        with self._connection.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
             cursor.execute(sql)
             responce = cursor.fetchall()
             if not responce:
@@ -70,19 +67,19 @@ class PostgresDB(ConfigurableResource):
     
 
     @handle_connection
-    def exec_sql_no_fetch(self, connection, sql: str) -> None:
+    def exec_sql_no_fetch(self, sql: str) -> None:
         """Execute SQL statement and return nothing"""
 
-        with connection.cursor() as cursor:
+        with self._connection.cursor() as cursor:
             cursor.execute(sql)
-            connection.commit()
+            self._connection.commit()
     
 
     @handle_connection
-    def exec_insert(self, connection, sql: str, values: list[tuple]):
+    def exec_insert(self, sql: str, values: list[tuple]):
         """Special case for insert statement"""
 
-        with connection.cursor() as cursor:
+        with self._connection.cursor() as cursor:
             psycopg2.extras.execute_values (
                 cursor, sql, values, template=None, page_size=100)
-            connection.commit()
+            self._connection.commit()
