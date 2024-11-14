@@ -46,3 +46,16 @@ def load_mapping(context: AssetExecutionContext, postgres_db: PostgresDB) -> Non
             conds[index] = translate_to_where_cond(row)
         df[where_cond_column_name] = pd.Series(conds)
         table.insert(df)
+
+@asset(deps=[load_sapmle_data, load_mapping])
+def source_data_loaded(context: AssetExecutionContext, postgres_db: PostgresDB) -> None:
+    """Source data loaded"""
+
+    data_table = generate_MTable(table_definition = TABLE_DEFINITIONS['data'], resource = postgres_db)
+    mapping_table = generate_MTable(table_definition = TABLE_DEFINITIONS['mapping'], resource = postgres_db)
+
+    data_test_df = data_table.select(columns = '*', extra = 'LIMIT 1')
+    mapping_test_df = mapping_table.select(columns = '*', extra = 'LIMIT 1')
+
+    print(data_test_df)
+    print(mapping_test_df)

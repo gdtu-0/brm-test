@@ -36,7 +36,7 @@ class MTable:
 
         raise NotImplementedError
     
-    def select(self) -> DataFrame:
+    def select(self, columns: Optional[tuple] = None, where: Optional[str] = None, extra: Optional[str] = None) -> Optional[DataFrame]:
         """Base select method"""
 
         raise NotImplementedError
@@ -64,6 +64,30 @@ class MTable_PG(MTable):
         sql_str = insert_str
 
         self._resource.exec_insert(sql = sql_str, values = list(data.itertuples(index = False, name = None)))
+
+    def select(self, columns: Optional[tuple] = None, where: Optional[str] = None, extra: Optional[str] = None) -> Optional[DataFrame]:
+        """PostgreSQL select method"""
+
+        if columns:
+            columns_str = ", ".join(name for name in columns)
+        else:
+            columns_str = ", ".join(name for name in self._table_definition.columns)
+        select_str = f"SELECT\n  {columns_str}\n"
+        from_str = f"FROM {self._table_definition.name}"
+        if where:
+            where_str = "\nWHERE " + where
+        else:
+            where_str = ''
+        if extra:
+            extra_str = '\n' + extra
+        else:
+            extra_str = ''
+        sql_str = f"{select_str}{from_str}{where_str}{extra_str};"
+        result = self._resource.exec_sql_dict_cursor(sql = sql_str)
+        if result:
+            return DataFrame.from_dict(result)
+        else:
+            return None
 
 
 def generate_MTable(table_definition: TableDefinition, resource: ConfigurableResource) -> MTable:
