@@ -1,7 +1,8 @@
 from pandas import Series
+from typing import Optional
 from ..common import TABLE_DEFINITIONS
 
-def _generate_where_cond(k: str, v: str) -> str:
+def _generate_where_cond(k: str, v: str) -> Optional[str]:
     """Generate where condition"""
 
     l_eq = []   # EQ - equals
@@ -53,9 +54,11 @@ def _generate_where_cond(k: str, v: str) -> str:
             cond_str = cond_str + f'{k} NOT LIKE \'{l_np[0]}\''
         else:
             cond_str = cond_str + f'({k} NOT LIKE \'' + f'\' AND {k} NOT LIKE \''.join(e for e in l_np) + '\')'
-    cond_str = f'({cond_str})'
     # print(f'\nk: {k}\nv: {v}\nl_eq: {l_eq}\nl_cp: {l_cp}\nl_ne: {l_ne}\nl_np: {l_np}\ncond_str: {cond_str}')
-    return cond_str
+    if cond_str != '':
+        return cond_str
+    else:
+        return None
 
 def translate_to_where_cond(mapping_row: Series) -> str:
     """Translate mapping row to SQL where condition"""
@@ -71,7 +74,9 @@ def translate_to_where_cond(mapping_row: Series) -> str:
             field = mapping_row[fld_key]
             condition = ''.join(str(mapping_row[val_key]).split())
             if field in data_fields:
-                conds.append(_generate_where_cond(field, condition))
+                cond = _generate_where_cond(field, condition)
+                if cond:
+                    conds.append(f'({cond})')
     out = ''
     if conds:
         out = ' AND '.join(cond for cond in conds)
