@@ -3,6 +3,7 @@ from typing import Optional
 from dataclasses import dataclass
 from dagster import ConfigurableResource
 from ..resources.postgres_db import PostgresDB
+from ..resources.clickhouse_db import ClickhouseDB
 
 
 @dataclass
@@ -11,6 +12,7 @@ class TableDefinition:
 
     name: str
     column_definitions: dict
+    extra: Optional[str] = None
 
     @property
     def columns(self) -> tuple:
@@ -90,11 +92,56 @@ class MTable_PG(MTable):
             return None
 
 
+class MTable_CH(MTable):
+    """MTable implementation for Clickhouse"""
+
+    def create(self) -> None:
+        """Clickhouse create method"""
+        
+        columns_str = ",\n  ".join(f'{name} {specs}' for name, specs in self._table_definition.column_definitions.items())
+        create_str = f"CREATE TABLE IF NOT EXISTS {self._table_definition.name} (\n  {columns_str}\n)"
+        if self._table_definition.extra:
+            create_str = f'{create_str}\n{self._table_definition.extra}'
+        sql_str = f"{create_str};"
+        self._resource.exec_command(sql_str)
+
+        sql_str = f"TRUNCATE {self._table_definition.name};"
+        self._resource.exec_command(sql_str)
+
+    def insert(self, data: DataFrame):
+        """Clickhouse insert method"""
+
+        column_names = list(name for name in data.columns)
+        self._resource.exec_insert(table_name = self._table_definition.name, values = list(data.itertuples(index = False, name = None)), column_names = column_names)
+
+    def select(self, columns: Optional[tuple] = None, where: Optional[str] = None, extra: Optional[str] = None) -> Optional[DataFrame]:
+        """PostgreSQL select method"""
+
+        if columns:
+            columns_str = ", ".join(name for name in columns)
+        else:
+            columns_str = ", ".join(name for name in self._table_definition.columns)
+        select_str = f"SELECT\n  {columns_str}\n"
+        from_str = f"FROM {self._table_definition.name}"
+        if where:
+            where_str = "\nWHERE " + where
+        else:
+            where_str = ''
+        if extra:
+            extra_str = '\n' + extra
+        else:
+            extra_str = ''
+        sql_str = f"{select_str}{from_str}{where_str}{extra_str};"
+        return self._resource.exec_query(sql = sql_str)
+
+
 def generate_MTable(table_definition: TableDefinition, resource: ConfigurableResource) -> MTable:
     """MTable generator"""
 
     if resource.__class__ is PostgresDB:
         mtable = MTable_PG(table_definition, resource)
+    elif resource.__class__ is ClickhouseDB:
+        mtable = MTable_CH(table_definition, resource)
     else:
         raise NotImplementedError
     

@@ -70,4 +70,22 @@ TABLE_DEFINITIONS = {
             'amount': 'numeric',
         }
     ),
+    'ch_data': TableDefinition(
+        name = 'ch_data',
+        column_definitions = {
+            'fisc_period': 'LowCardinality(String)',
+            'comp_code': 'LowCardinality(String)',
+            'account': 'LowCardinality(String)',
+            'corr_account': 'LowCardinality(String)',
+            'cost_center': 'LowCardinality(String)',
+            'order_num': 'LowCardinality(String)',
+            'wbs_element': 'LowCardinality(String)',
+            'material': 'LowCardinality(String)',
+            'trans_type': 'LowCardinality(String)',
+            'eval_group': 'LowCardinality(String)',
+            'currency': 'LowCardinality(String)',
+            'amount': 'Decimal64(3)',
+        },
+        extra = 'ENGINE = MergeTree()\nORDER BY (fisc_period, comp_code, account)'
+    )
 }
