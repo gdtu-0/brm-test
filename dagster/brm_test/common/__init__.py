@@ -53,7 +53,7 @@ TABLE_DEFINITIONS = {
             'trg_val_11': 'varchar',
         }
     ),
-    'data': TableDefinition(
+    'pg_data': TableDefinition(
         name = 'pg_data',
         column_definitions = {
             'fisc_period': 'varchar(7)',
