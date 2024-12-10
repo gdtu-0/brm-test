@@ -20,7 +20,7 @@ def _list_dir(relpath: str) -> list[str]:
 def load_sapmle_data(context: AssetExecutionContext, postgres_db: PostgresDB) -> None:
     """Load data sample as Dataframe"""
 
-    table = generate_MTable(table_definition = TABLE_DEFINITIONS['data'], resource = postgres_db)
+    table = generate_MTable(table_definition = TABLE_DEFINITIONS['pg_data'], resource = postgres_db)
     table.create()
     relpath = '../data/source_data/'
     for filename in _list_dir(relpath):
@@ -51,7 +51,7 @@ def load_mapping(context: AssetExecutionContext, postgres_db: PostgresDB) -> Non
 def source_data_loaded(context: AssetExecutionContext, postgres_db: PostgresDB) -> None:
     """Source data loaded"""
 
-    data_table = generate_MTable(table_definition = TABLE_DEFINITIONS['data'], resource = postgres_db)
+    data_table = generate_MTable(table_definition = TABLE_DEFINITIONS['pg_data'], resource = postgres_db)
     mapping_table = generate_MTable(table_definition = TABLE_DEFINITIONS['mapping'], resource = postgres_db)
 
     data_test_df = data_table.select(columns = '*', extra = 'LIMIT 1')

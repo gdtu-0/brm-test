@@ -9,7 +9,7 @@ from .load_source import source_data_loaded
 def pg_apply_mapping(context: AssetExecutionContext, postgres_db: PostgresDB) -> None:
     """Apply mapping for PostgreSQL DB"""
 
-    data_table = generate_MTable(table_definition = TABLE_DEFINITIONS['data'], resource = postgres_db)
+    data_table = generate_MTable(table_definition = TABLE_DEFINITIONS['pg_data'], resource = postgres_db)
     mapping_table = generate_MTable(table_definition = TABLE_DEFINITIONS['mapping'], resource = postgres_db)
 
     mapping_df = mapping_table.select()

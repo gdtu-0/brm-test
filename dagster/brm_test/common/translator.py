@@ -63,7 +63,7 @@ def _generate_where_cond(k: str, v: str) -> Optional[str]:
 def translate_to_where_cond(mapping_row: Series) -> str:
     """Translate mapping row to SQL where condition"""
 
-    data_fields = TABLE_DEFINITIONS['data'].column_definitions.keys()
+    data_fields = TABLE_DEFINITIONS['pg_data'].column_definitions.keys()
     conds = []
 
     source_prefix = 'src_fld'

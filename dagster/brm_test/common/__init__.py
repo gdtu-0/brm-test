@@ -54,7 +54,7 @@ TABLE_DEFINITIONS = {
         }
     ),
     'data': TableDefinition(
-        name = 'data',
+        name = 'pg_data',
         column_definitions = {
             'fisc_period': 'varchar(7)',
             'comp_code': 'varchar(4)',
