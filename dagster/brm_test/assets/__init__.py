@@ -13,6 +13,10 @@ from .ch_apply_mapping import(
     ch_apply_mapping,
 )
 
+from .os_apply_mapping import(
+    os_load_data
+)
+
 PROJECT_ASSETS = [
     load_mapping,
     load_sapmle_data,
@@ -20,4 +24,5 @@ PROJECT_ASSETS = [
     pg_apply_mapping,
     ch_load_data,
     ch_apply_mapping,
+    os_load_data,
 ]

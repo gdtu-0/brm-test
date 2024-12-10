@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from dagster import ConfigurableResource
 from ..resources.postgres_db import PostgresDB
 from ..resources.clickhouse_db import ClickhouseDB
+from ..resources.opensearch import Opensearch
 
 
 @dataclass
@@ -115,7 +116,7 @@ class MTable_CH(MTable):
         self._resource.exec_insert(table_name = self._table_definition.name, values = list(data.itertuples(index = False, name = None)), column_names = column_names)
 
     def select(self, columns: Optional[tuple] = None, where: Optional[str] = None, extra: Optional[str] = None) -> Optional[DataFrame]:
-        """PostgreSQL select method"""
+        """Clickhouse select method"""
 
         if columns:
             columns_str = ", ".join(name for name in columns)
@@ -133,6 +134,44 @@ class MTable_CH(MTable):
             extra_str = ''
         sql_str = f"{select_str}{from_str}{where_str}{extra_str};"
         return self._resource.exec_query(sql = sql_str)
+    
+
+class MTable_OS(MTable):
+    """MTable implementation for OpenSearch"""
+
+    def create(self) -> None:
+        """OpenSearch create method"""
+        
+        self._resource.create(
+            index_name = self._table_definition.name,
+            properties = self._table_definition.column_definitions
+        )
+
+    # def insert(self, data: DataFrame):
+    #     """OpenSearch insert method"""
+
+    #     column_names = list(name for name in data.columns)
+    #     self._resource.exec_insert(table_name = self._table_definition.name, values = list(data.itertuples(index = False, name = None)), column_names = column_names)
+
+    # def select(self, columns: Optional[tuple] = None, where: Optional[str] = None, extra: Optional[str] = None) -> Optional[DataFrame]:
+    #     """OpenSearch select method"""
+
+    #     if columns:
+    #         columns_str = ", ".join(name for name in columns)
+    #     else:
+    #         columns_str = ", ".join(name for name in self._table_definition.columns)
+    #     select_str = f"SELECT\n  {columns_str}\n"
+    #     from_str = f"FROM {self._table_definition.name}"
+    #     if where:
+    #         where_str = "\nWHERE " + where
+    #     else:
+    #         where_str = ''
+    #     if extra:
+    #         extra_str = '\n' + extra
+    #     else:
+    #         extra_str = ''
+    #     sql_str = f"{select_str}{from_str}{where_str}{extra_str};"
+    #     return self._resource.exec_query(sql = sql_str)
 
 
 def generate_MTable(table_definition: TableDefinition, resource: ConfigurableResource) -> MTable:
@@ -142,6 +181,8 @@ def generate_MTable(table_definition: TableDefinition, resource: ConfigurableRes
         mtable = MTable_PG(table_definition, resource)
     elif resource.__class__ is ClickhouseDB:
         mtable = MTable_CH(table_definition, resource)
+    elif resource.__class__ is Opensearch:
+        mtable = MTable_OS(table_definition, resource)
     else:
         raise NotImplementedError
     

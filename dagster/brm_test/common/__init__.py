@@ -87,5 +87,22 @@ TABLE_DEFINITIONS = {
             'amount': 'Decimal64(3)',
         },
         extra = 'ENGINE = MergeTree()\nORDER BY (fisc_period, comp_code, account)'
-    )
+    ),
+    'os_data': TableDefinition(
+        name = 'os_data',
+        column_definitions = {
+            'fisc_period': {"type": "short"},
+            'comp_code': {"type": "wildcard"},
+            'account': {"type": "wildcard"},
+            'corr_account': {"type": "wildcard"},
+            'cost_center': {"type": "wildcard"},
+            'order_num': {"type": "wildcard"},
+            'wbs_element': {"type": "wildcard"},
+            'material': {"type": "wildcard"},
+            'trans_type': {"type": "wildcard"},
+            'eval_group': {"type": "wildcard"},
+            'currency': {"type": "keyword"},
+            'amount': {"type": "float"},
+        }
+    ),
 }
