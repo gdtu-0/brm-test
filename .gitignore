@@ -1,2 +1,3 @@
 *__pycache__*
-/dagster/brm_test/data/*
+/dagster/brm_test/data/mapping/*
+/dagster/brm_test/data/source_data/*
