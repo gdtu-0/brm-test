@@ -22,12 +22,19 @@ class TableDefinition:
 class MTable:
     """Base MTable class"""
 
-    _table_definition: TableDefinition
-    _resource: ConfigurableResource
-
     def __init__(self, table_definition: TableDefinition, resource: ConfigurableResource):
-        self._table_definition = table_definition
-        self._resource = resource
+        self.__table_definition = table_definition
+        self.__resource = resource
+    
+    @property
+    def table_definition(self) -> TableDefinition:
+
+        return self.__table_definition
+    
+    @property
+    def resource(self) -> ConfigurableResource:
+
+        return self.__resource
 
     def create(self) -> None:
         """Base create method"""
@@ -51,22 +58,22 @@ class MTable_PG(MTable):
     def create(self) -> None:
         """PostgreSQL create method"""
         
-        columns_str = ",\n  ".join(f'{name} {specs}' for name, specs in self._table_definition.column_definitions.items())
-        create_str = f"CREATE TABLE IF NOT EXISTS {self._table_definition.name} (\n  {columns_str}\n)"
+        columns_str = ",\n  ".join(f'{name} {specs}' for name, specs in self.table_definition.column_definitions.items())
+        create_str = f"CREATE TABLE IF NOT EXISTS {self.table_definition.name} (\n  {columns_str}\n)"
         sql_str = f"{create_str};"
-        self._resource.exec_sql_no_fetch(sql_str)
+        self.resource.exec_sql_no_fetch(sql_str)
 
-        sql_str = f"TRUNCATE {self._table_definition.name};"
-        self._resource.exec_sql_no_fetch(sql_str)
+        sql_str = f"TRUNCATE {self.table_definition.name};"
+        self.resource.exec_sql_no_fetch(sql_str)
 
     def insert(self, data: DataFrame):
         """PostgreSQL insert method"""
 
         columns_str = ", ".join(name for name in data.columns)
-        insert_str = f"INSERT INTO {self._table_definition.name}\n  ({columns_str})\nVALUES %s"
+        insert_str = f"INSERT INTO {self.table_definition.name}\n  ({columns_str})\nVALUES %s"
         sql_str = insert_str
 
-        self._resource.exec_insert(sql = sql_str, values = list(data.itertuples(index = False, name = None)))
+        self.resource.exec_insert(sql = sql_str, values = list(data.itertuples(index = False, name = None)))
 
     def select(self, columns: Optional[tuple] = None, where: Optional[str] = None, extra: Optional[str] = None) -> Optional[DataFrame]:
         """PostgreSQL select method"""
@@ -74,9 +81,9 @@ class MTable_PG(MTable):
         if columns:
             columns_str = ", ".join(name for name in columns)
         else:
-            columns_str = ", ".join(name for name in self._table_definition.columns)
+            columns_str = ", ".join(name for name in self.table_definition.columns)
         select_str = f"SELECT\n  {columns_str}\n"
-        from_str = f"FROM {self._table_definition.name}"
+        from_str = f"FROM {self.table_definition.name}"
         if where:
             where_str = "\nWHERE " + where
         else:
@@ -86,7 +93,7 @@ class MTable_PG(MTable):
         else:
             extra_str = ''
         sql_str = f"{select_str}{from_str}{where_str}{extra_str};"
-        result = self._resource.exec_sql_dict_cursor(sql = sql_str)
+        result = self.resource.exec_sql_dict_cursor(sql = sql_str)
         if result:
             return DataFrame.from_dict(result)
         else:
@@ -99,21 +106,21 @@ class MTable_CH(MTable):
     def create(self) -> None:
         """Clickhouse create method"""
         
-        columns_str = ",\n  ".join(f'{name} {specs}' for name, specs in self._table_definition.column_definitions.items())
-        create_str = f"CREATE TABLE IF NOT EXISTS {self._table_definition.name} (\n  {columns_str}\n)"
-        if self._table_definition.extra:
-            create_str = f'{create_str}\n{self._table_definition.extra}'
+        columns_str = ",\n  ".join(f'{name} {specs}' for name, specs in self.table_definition.column_definitions.items())
+        create_str = f"CREATE TABLE IF NOT EXISTS {self.table_definition.name} (\n  {columns_str}\n)"
+        if self.__table_definition.extra:
+            create_str = f'{create_str}\n{self.table_definition.extra}'
         sql_str = f"{create_str};"
-        self._resource.exec_command(sql_str)
+        self.resource.exec_command(sql_str)
 
-        sql_str = f"TRUNCATE {self._table_definition.name};"
-        self._resource.exec_command(sql_str)
+        sql_str = f"TRUNCATE {self.table_definition.name};"
+        self.resource.exec_command(sql_str)
 
     def insert(self, data: DataFrame):
         """Clickhouse insert method"""
 
         column_names = list(name for name in data.columns)
-        self._resource.exec_insert(table_name = self._table_definition.name, values = list(data.itertuples(index = False, name = None)), column_names = column_names)
+        self.resource.exec_insert(table_name = self.table_definition.name, values = list(data.itertuples(index = False, name = None)), column_names = column_names)
 
     def select(self, columns: Optional[tuple] = None, where: Optional[str] = None, extra: Optional[str] = None) -> Optional[DataFrame]:
         """Clickhouse select method"""
@@ -121,9 +128,9 @@ class MTable_CH(MTable):
         if columns:
             columns_str = ", ".join(name for name in columns)
         else:
-            columns_str = ", ".join(name for name in self._table_definition.columns)
+            columns_str = ", ".join(name for name in self.table_definition.columns)
         select_str = f"SELECT\n  {columns_str}\n"
-        from_str = f"FROM {self._table_definition.name}"
+        from_str = f"FROM {self.table_definition.name}"
         if where:
             where_str = "\nWHERE " + where
         else:
@@ -133,7 +140,7 @@ class MTable_CH(MTable):
         else:
             extra_str = ''
         sql_str = f"{select_str}{from_str}{where_str}{extra_str};"
-        return self._resource.exec_query(sql = sql_str)
+        return self.resource.exec_query(sql = sql_str)
     
 
 class MTable_OS(MTable):
@@ -142,9 +149,9 @@ class MTable_OS(MTable):
     def create(self) -> None:
         """OpenSearch create method"""
         
-        self._resource.create(
-            index_name = self._table_definition.name,
-            properties = self._table_definition.column_definitions
+        self.__resource.create(
+            index_name = self.table_definition.name,
+            properties = self.table_definition.column_definitions
         )
 
     # def insert(self, data: DataFrame):

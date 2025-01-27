@@ -12,7 +12,7 @@ class Opensearch(ConfigurableResource):
     password: str
     host: str
     port: int
-    _client: Optional[object]=None
+    __client: Optional[object]=None
 
 
     def handle_connection(function):
@@ -23,8 +23,8 @@ class Opensearch(ConfigurableResource):
             # We do not explicitly close connection becasue Dagster initializes (and deletes) resources
             # for every op/asset. So, after op/asset finish resource will be destroyed and GC will
             # invoke del for resource object witch will close the connection
-            if not self._client:
-                self._client = OpenSearch(
+            if not self.__client:
+                self.__client = OpenSearch(
                     hosts = [{'host': self.host, 'port': self.port}],
                     http_auth = (self.username, self.password),
                     http_compress = False,
@@ -53,10 +53,10 @@ class Opensearch(ConfigurableResource):
             }
         }
 
-        if self._client.indices.exists(index_name):
-            self._client.indices.delete(index_name)
+        if self.__client.indices.exists(index_name):
+            self.__client.indices.delete(index_name)
         
-        self._client.indices.create(
+        self.__client.indices.create(
             index_name,
             body=index_body
         )

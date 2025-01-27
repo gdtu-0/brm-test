@@ -13,7 +13,7 @@ class PostgresDB(ConfigurableResource):
     password:str
     host:str
     port:int
-    _connection:Optional[object]=None
+    __connection:Optional[object]=None
 
 
     def handle_connection(function):
@@ -24,8 +24,8 @@ class PostgresDB(ConfigurableResource):
             # We do not explicitly close connection becasue Dagster initializes (and deletes) resources
             # for every op/asset. So, after op/asset finish resource will be destroyed and GC will
             # invoke del for resource object witch will close the connection
-            if not self._connection:
-                self._connection = psycopg2.connect(
+            if not self.__connection:
+                self.__connection = psycopg2.connect(
                     dbname = self.dbname,
                     user = self.username,
                     password = self.password,
@@ -44,7 +44,7 @@ class PostgresDB(ConfigurableResource):
         sql_str = f"SELECT EXISTS (\n\tSELECT FROM information_schema.tables WHERE table_name = \'{table_name}\'\n);"
 
         exists = False
-        with self._connection.cursor() as cursor:
+        with self.__connection.cursor() as cursor:
             cursor.execute(sql_str)
             exists = cursor.fetchone()[0]
         return(exists)
@@ -54,7 +54,7 @@ class PostgresDB(ConfigurableResource):
     def exec_sql_dict_cursor(self, sql: str) -> Optional[list]:
         """Execute SQL statement with dict cursor"""
 
-        with self._connection.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+        with self.__connection.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
             cursor.execute(sql)
             responce = cursor.fetchall()
             if not responce:
@@ -70,16 +70,16 @@ class PostgresDB(ConfigurableResource):
     def exec_sql_no_fetch(self, sql: str) -> None:
         """Execute SQL statement and return nothing"""
 
-        with self._connection.cursor() as cursor:
+        with self.__connection.cursor() as cursor:
             cursor.execute(sql)
-            self._connection.commit()
+            self.__connection.commit()
     
 
     @handle_connection
     def exec_insert(self, sql: str, values: list[tuple]):
         """Special case for insert statement"""
 
-        with self._connection.cursor() as cursor:
+        with self.__connection.cursor() as cursor:
             psycopg2.extras.execute_values (
                 cursor, sql, values, template=None, page_size=100)
-            self._connection.commit()
+            self.__connection.commit()

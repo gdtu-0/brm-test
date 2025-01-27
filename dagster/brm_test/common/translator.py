@@ -2,7 +2,7 @@ from pandas import Series
 from typing import Optional
 from ..common import TABLE_DEFINITIONS
 
-def _generate_where_cond(k: str, v: str) -> Optional[str]:
+def __generate_where_cond(k: str, v: str) -> Optional[str]:
     """Generate where condition"""
 
     l_eq = []   # EQ - equals
@@ -74,7 +74,7 @@ def translate_to_where_cond(mapping_row: Series) -> str:
             field = mapping_row[fld_key]
             condition = ''.join(str(mapping_row[val_key]).split())
             if field in data_fields:
-                cond = _generate_where_cond(field, condition)
+                cond = __generate_where_cond(field, condition)
                 if cond:
                     conds.append(f'({cond})')
     out = ''
