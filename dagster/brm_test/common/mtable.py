@@ -108,7 +108,7 @@ class MTable_CH(MTable):
         
         columns_str = ",\n  ".join(f'{name} {specs}' for name, specs in self.table_definition.column_definitions.items())
         create_str = f"CREATE TABLE IF NOT EXISTS {self.table_definition.name} (\n  {columns_str}\n)"
-        if self.__table_definition.extra:
+        if self.table_definition.extra:
             create_str = f'{create_str}\n{self.table_definition.extra}'
         sql_str = f"{create_str};"
         self.resource.exec_command(sql_str)
@@ -149,7 +149,7 @@ class MTable_OS(MTable):
     def create(self) -> None:
         """OpenSearch create method"""
         
-        self.__resource.create(
+        self.resource.create(
             index_name = self.table_definition.name,
             properties = self.table_definition.column_definitions
         )
