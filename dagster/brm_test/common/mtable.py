@@ -154,8 +154,24 @@ class MTable_OS(MTable):
             properties = self.table_definition.column_definitions
         )
 
-    # def insert(self, data: DataFrame):
-    #     """OpenSearch insert method"""
+    def insert(self, data: DataFrame):
+        """OpenSearch insert method"""
+
+        documents = data.to_dict('records')
+        id = 0
+        for document in documents:
+            id = id + 1
+            document["_index"] = self.table_definition.name
+            document["_id"] = id
+
+        self.resource.bulk_index(
+            index_name = self.table_definition.name,
+            documents = documents,
+        )
+        
+        # self.resource.
+        
+
 
     #     column_names = list(name for name in data.columns)
     #     self._resource.exec_insert(table_name = self._table_definition.name, values = list(data.itertuples(index = False, name = None)), column_names = column_names)

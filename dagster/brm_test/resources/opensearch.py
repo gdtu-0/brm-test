@@ -1,6 +1,7 @@
 import functools
 from opensearchpy import OpenSearch
 from opensearchpy.helpers.index import Index
+from opensearchpy.helpers import bulk
 from dagster import ConfigurableResource
 from typing import Optional
 
@@ -60,3 +61,9 @@ class Opensearch(ConfigurableResource):
             index_name,
             body=index_body
         )
+    
+    @handle_connection
+    def bulk_index(self, index_name: str, documents: list[dict]) -> None:
+        """Bulk insert documents to index"""
+
+        bulk(self.__client, documents)

@@ -91,7 +91,7 @@ TABLE_DEFINITIONS = {
     'os_data': TableDefinition(
         name = 'os_data',
         column_definitions = {
-            'fisc_period': {"type": "short"},
+            'fisc_period': {"type": "wildcard"},
             'comp_code': {"type": "wildcard"},
             'account': {"type": "wildcard"},
             'corr_account': {"type": "wildcard"},

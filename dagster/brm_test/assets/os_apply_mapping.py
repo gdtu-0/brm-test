@@ -14,8 +14,8 @@ def os_load_data(context: AssetExecutionContext, opensearch: Opensearch, postgre
     pg_data_table = generate_MTable(table_definition = TABLE_DEFINITIONS['pg_data'], resource = postgres_db)
 
     os_data_table.create()
-    # pg_data = pg_data_table.select()
-    # ch_data_table.insert(pg_data)
+    pg_data = pg_data_table.select()
+    os_data_table.insert(pg_data)
 
 # @asset(deps=[ch_load_data])
 # def ch_apply_mapping(context: AssetExecutionContext, clickhouse_db: ClickhouseDB, postgres_db: PostgresDB) -> None:
