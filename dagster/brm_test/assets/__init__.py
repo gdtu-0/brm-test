@@ -14,7 +14,8 @@ from .ch_apply_mapping import(
 )
 
 from .os_apply_mapping import(
-    os_load_data
+    os_load_data,
+    os_apply_mapping,
 )
 
 PROJECT_ASSETS = [
@@ -25,4 +26,5 @@ PROJECT_ASSETS = [
     ch_load_data,
     ch_apply_mapping,
     os_load_data,
+    os_apply_mapping,
 ]

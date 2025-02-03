@@ -8,6 +8,7 @@ from .load_source import source_data_loaded
 
 @asset(deps=[source_data_loaded])
 def os_load_data(context: AssetExecutionContext, opensearch: Opensearch, postgres_db: PostgresDB) -> None:
+
     """Create Opensearch index and load data"""
 
     os_data_table = generate_MTable(table_definition = TABLE_DEFINITIONS['os_data'], resource = opensearch)
@@ -17,18 +18,19 @@ def os_load_data(context: AssetExecutionContext, opensearch: Opensearch, postgre
     pg_data = pg_data_table.select()
     os_data_table.insert(pg_data)
 
-# @asset(deps=[ch_load_data])
-# def ch_apply_mapping(context: AssetExecutionContext, clickhouse_db: ClickhouseDB, postgres_db: PostgresDB) -> None:
-#     """Apply mapping for Clickhouse DB"""
+@asset(deps=[os_load_data])
+def os_apply_mapping(context: AssetExecutionContext, opensearch: Opensearch, postgres_db: PostgresDB) -> None:
 
-#     ch_data_table = generate_MTable(table_definition = TABLE_DEFINITIONS['ch_data'], resource = clickhouse_db)
-#     mapping_table = generate_MTable(table_definition = TABLE_DEFINITIONS['mapping'], resource = postgres_db)
+     """Apply mapping for Opensearch"""
 
-#     mapping_df = mapping_table.select()
-#     for index, rule in mapping_df.iterrows():
-#         result_df = ch_data_table.select(where = rule['where_cond'])
-#         if result_df is not None:
-#             results_count = result_df.shape[0]
-#         else:
-#             results_count = 0
-#         print(f"RULE {index}: WHERE {rule['where_cond']}\nRESULTS :{results_count} row(s)")
+     os_data_table = generate_MTable(table_definition = TABLE_DEFINITIONS['os_data'], resource = opensearch)
+     mapping_table = generate_MTable(table_definition = TABLE_DEFINITIONS['mapping'], resource = postgres_db)
+
+     mapping_df = mapping_table.select()
+     for index, rule in mapping_df.iterrows():
+         result_df = os_data_table.select(where = rule['where_cond'])
+         if result_df is not None:
+             results_count = result_df.shape[0]
+         else:
+             results_count = 0
+         print(f"RULE {index}: WHERE {rule['where_cond']}\nRESULTS :{results_count} row(s)")

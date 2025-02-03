@@ -44,7 +44,7 @@ def __generate_where_cond(k: str, v: str) -> Optional[str]:
         if l_eq or l_cp:
             cond_str = cond_str + ' AND '
         if len(l_ne) == 1:
-            cond_str = cond_str + f'{k} != \'{l_ne[0]}\''
+            cond_str = cond_str + f'{k} <> \'{l_ne[0]}\''
         else:
             cond_str = cond_str + f'{k} NOT IN (\'' + '\',\''.join(e for e in l_ne) + '\')'
     if l_np:

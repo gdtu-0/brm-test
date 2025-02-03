@@ -5,6 +5,7 @@ from dagster import ConfigurableResource
 from ..resources.postgres_db import PostgresDB
 from ..resources.clickhouse_db import ClickhouseDB
 from ..resources.opensearch import Opensearch
+import ast
 
 
 @dataclass
@@ -168,33 +169,36 @@ class MTable_OS(MTable):
             index_name = self.table_definition.name,
             documents = documents,
         )
-        
-        # self.resource.
-        
 
+    def select(self, columns: Optional[tuple] = None, where: Optional[str] = None, extra: Optional[str] = None) -> Optional[DataFrame]:
+        """OpenSearch select method"""
 
-    #     column_names = list(name for name in data.columns)
-    #     self._resource.exec_insert(table_name = self._table_definition.name, values = list(data.itertuples(index = False, name = None)), column_names = column_names)
+        if columns:
+            columns_str = ", ".join(name for name in columns)
+        else:
+            columns_str = ", ".join(name for name in self.table_definition.columns)
+        select_str = f"SELECT\n  {columns_str}\n"
+        from_str = f"FROM {self.table_definition.name}"
+        if where:
+            where_str = "\nWHERE " + where
+        else:
+            where_str = ''
+        sql_str = f"{select_str}{from_str}{where_str}"
 
-    # def select(self, columns: Optional[tuple] = None, where: Optional[str] = None, extra: Optional[str] = None) -> Optional[DataFrame]:
-    #     """OpenSearch select method"""
+        output = self.resource.exec_sql(sql = sql_str)
+        ast_out = ast.literal_eval(output)
+        print(ast_out)
 
-    #     if columns:
-    #         columns_str = ", ".join(name for name in columns)
-    #     else:
-    #         columns_str = ", ".join(name for name in self._table_definition.columns)
-    #     select_str = f"SELECT\n  {columns_str}\n"
-    #     from_str = f"FROM {self._table_definition.name}"
-    #     if where:
-    #         where_str = "\nWHERE " + where
-    #     else:
-    #         where_str = ''
-    #     if extra:
-    #         extra_str = '\n' + extra
-    #     else:
-    #         extra_str = ''
-    #     sql_str = f"{select_str}{from_str}{where_str}{extra_str};"
-    #     return self._resource.exec_query(sql = sql_str)
+        try:
+            ast_out["error"]
+        except KeyError:
+            if ast_out["total"] > 0:
+                print(ast_out["datarows"])
+        else:
+            print(ast_out["error"])
+            print(sql_str)
+            # raise Exception
+        return None
 
 
 def generate_MTable(table_definition: TableDefinition, resource: ConfigurableResource) -> MTable:

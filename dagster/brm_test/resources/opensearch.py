@@ -4,9 +4,11 @@ from opensearchpy.helpers.index import Index
 from opensearchpy.helpers import bulk
 from dagster import ConfigurableResource
 from typing import Optional
+import requests
 
 
 class Opensearch(ConfigurableResource):
+
     """Dagster resource definition for Opensearch"""
 
     username: str
@@ -15,8 +17,8 @@ class Opensearch(ConfigurableResource):
     port: int
     __client: Optional[object]=None
 
-
     def handle_connection(function):
+
         """Wrapper for handling connection"""
 
         @functools.wraps(function)
@@ -38,9 +40,9 @@ class Opensearch(ConfigurableResource):
             return(value)
         return wrapper_handle_connection
     
-
     @handle_connection
     def create(self, index_name: str, properties: dict) -> None:
+
         """Create or replace index"""
 
         index_body = {
@@ -57,13 +59,28 @@ class Opensearch(ConfigurableResource):
         if self.__client.indices.exists(index_name):
             self.__client.indices.delete(index_name)
         
-        self.__client.indices.create(
+        result = self.__client.indices.create(
             index_name,
             body=index_body
         )
     
     @handle_connection
     def bulk_index(self, index_name: str, documents: list[dict]) -> None:
+
         """Bulk insert documents to index"""
 
         bulk(self.__client, documents)
+    
+    @handle_connection
+    def exec_sql(self, sql: str) -> str:
+
+        """Opensearch select"""
+
+        sql_url = f"https://{self.host}:{self.port}/_plugins/_sql"
+        data = { "query": sql }
+        header = {'Content-type': 'application/json'}
+
+        result = requests.post(url = sql_url, json = data, headers = header, auth = (self.username, self.password), verify = False)
+
+        return result.text
+
