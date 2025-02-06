@@ -14,6 +14,7 @@ def os_load_data(context: AssetExecutionContext, opensearch: Opensearch, postgre
     os_data_table = generate_MTable(table_definition = TABLE_DEFINITIONS['os_data'], resource = opensearch)
     pg_data_table = generate_MTable(table_definition = TABLE_DEFINITIONS['pg_data'], resource = postgres_db)
 
+    os_data_table.truncate()
     os_data_table.create()
     pg_data = pg_data_table.select()
     os_data_table.insert(pg_data)

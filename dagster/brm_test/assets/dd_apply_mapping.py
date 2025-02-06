@@ -14,6 +14,7 @@ def dd_load_data(context: AssetExecutionContext, duckdb: DuckDB, postgres_db: Po
     pg_data_table = generate_MTable(table_definition = TABLE_DEFINITIONS['pg_data'], resource = postgres_db)
 
     dd_data_table.create()
+    dd_data_table.truncate()
     pg_data = pg_data_table.select()
     pg_data = pg_data.astype({'amount': 'float64'})     # DuckDB has some issues with Decimal type
     dd_data_table.insert(pg_data)

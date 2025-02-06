@@ -14,6 +14,7 @@ def ch_load_data(context: AssetExecutionContext, clickhouse_db: ClickhouseDB, po
     pg_data_table = generate_MTable(table_definition = TABLE_DEFINITIONS['pg_data'], resource = postgres_db)
 
     ch_data_table.create()
+    ch_data_table.truncate()
     pg_data = pg_data_table.select()
     ch_data_table.insert(pg_data)
 

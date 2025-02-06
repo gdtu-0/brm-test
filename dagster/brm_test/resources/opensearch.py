@@ -56,13 +56,17 @@ class Opensearch(ConfigurableResource):
             }
         }
 
+        if not self.__client.indices.exists(index_name):
+            result = self.__client.indices.create(
+                index_name,
+                body=index_body
+            )
+    
+    @handle_connection
+    def delete(self, index_name: str) -> None:
+
         if self.__client.indices.exists(index_name):
             self.__client.indices.delete(index_name)
-        
-        result = self.__client.indices.create(
-            index_name,
-            body=index_body
-        )
     
     @handle_connection
     def bulk_index(self, index_name: str, documents: list[dict]) -> None:

@@ -43,6 +43,11 @@ class MTable:
 
         raise NotImplementedError
     
+    def truncate(self) -> None:
+        """Base truncate method"""
+
+        raise NotImplementedError
+    
     def insert(self, data: DataFrame) -> None:
         """Base insert method"""
 
@@ -64,6 +69,9 @@ class MTable_PG(MTable):
         create_str = f"CREATE TABLE IF NOT EXISTS {self.table_definition.name} (\n  {columns_str}\n)"
         sql_str = f"{create_str};"
         self.resource.exec_sql_no_fetch(sql_str)
+
+    def truncate(self) -> None:
+        """PostgreSQL truncate method"""
 
         sql_str = f"TRUNCATE {self.table_definition.name};"
         self.resource.exec_sql_no_fetch(sql_str)
@@ -117,6 +125,12 @@ class MTable_CH(MTable):
 
         sql_str = f"TRUNCATE {self.table_definition.name};"
         self.resource.exec_command(sql_str)
+    
+    def truncate(self) -> None:
+        """Clickhouse truncate method"""
+
+        sql_str = f"TRUNCATE {self.table_definition.name};"
+        self.resource.exec_command(sql_str)
 
     def insert(self, data: DataFrame):
         """Clickhouse insert method"""
@@ -155,6 +169,11 @@ class MTable_OS(MTable):
             index_name = self.table_definition.name,
             properties = self.table_definition.column_definitions
         )
+    
+    def truncate(self) -> None:
+        """OpenSearch truncate method"""
+
+        self.resource.delete(index_name = self.table_definition.name)
 
     def insert(self, data: DataFrame):
         """OpenSearch insert method"""
@@ -211,11 +230,12 @@ class MTable_DD(MTable):
         create_str = f"CREATE TABLE IF NOT EXISTS {self.table_definition.name} (\n  {columns_str}\n)"
         sql_str = f"{create_str};"
         self.resource.exec_sql_no_fetch(sql_str)
-        self.resource.exec_sql_no_fetch(f"DESCRIBE {self.table_definition.name}")
+    
+    def truncate(self) -> None:
+        """DuckDB truncate method"""
 
         sql_str = f"TRUNCATE {self.table_definition.name};"
         self.resource.exec_sql_no_fetch(sql_str)
-        self.resource.exec_sql_no_fetch(f"DESCRIBE {self.table_definition.name}")
 
     def insert(self, data: DataFrame):
         """DuckDB insert method"""

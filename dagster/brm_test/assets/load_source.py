@@ -22,6 +22,7 @@ def load_sapmle_data(context: AssetExecutionContext, postgres_db: PostgresDB) ->
 
     table = generate_MTable(table_definition = TABLE_DEFINITIONS['pg_data'], resource = postgres_db)
     table.create()
+    table.truncate()
     relpath = '../data/source_data/'
     for filename in _list_dir(relpath):
         context.log.info(f"Loading {filename}")
@@ -35,6 +36,7 @@ def load_mapping(context: AssetExecutionContext, postgres_db: PostgresDB) -> Non
     
     table = generate_MTable(table_definition = TABLE_DEFINITIONS['mapping'], resource = postgres_db)
     table.create()
+    table.truncate()
     relpath = '../data/mapping/'
     where_cond_column_name = 'where_cond'
     for filename in _list_dir(relpath):
