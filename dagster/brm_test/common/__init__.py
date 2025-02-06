@@ -105,4 +105,21 @@ TABLE_DEFINITIONS = {
             'amount': {"type": "float"},
         }
     ),
+    'dd_data': TableDefinition(
+        name = 'dd_data',
+        column_definitions = {
+            'fisc_period': 'varchar(7)',
+            'comp_code': 'varchar(4)',
+            'account': 'varchar(10)',
+            'corr_account': 'varchar(10)',
+            'cost_center': 'varchar(10)',
+            'order_num': 'varchar(12)',
+            'wbs_element': 'varchar(24)',
+            'material': 'varchar(18)',
+            'trans_type': 'varchar(3)',
+            'eval_group': 'varchar(2)',
+            'currency': 'varchar(3)',
+            'amount': 'decimal(17,2)',
+        }
+    ),
 }

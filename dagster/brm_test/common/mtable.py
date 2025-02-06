@@ -5,6 +5,7 @@ from dagster import ConfigurableResource
 from ..resources.postgres_db import PostgresDB
 from ..resources.clickhouse_db import ClickhouseDB
 from ..resources.opensearch import Opensearch
+from ..resources.duck_db import DuckDB
 import ast
 
 
@@ -187,7 +188,6 @@ class MTable_OS(MTable):
 
         output = self.resource.exec_sql(sql = sql_str)
         ast_out = ast.literal_eval(output)
-        print(ast_out)
 
         try:
             ast_out["error"]
@@ -201,6 +201,46 @@ class MTable_OS(MTable):
         return None
 
 
+class MTable_DD(MTable):
+    """MTable implementation for DuckDB"""
+
+    def create(self) -> None:
+        """DuckDB create method"""
+        
+        columns_str = ",\n  ".join(f'{name} {specs}' for name, specs in self.table_definition.column_definitions.items())
+        create_str = f"CREATE TABLE IF NOT EXISTS {self.table_definition.name} (\n  {columns_str}\n)"
+        sql_str = f"{create_str};"
+        self.resource.exec_sql_no_fetch(sql_str)
+        self.resource.exec_sql_no_fetch(f"DESCRIBE {self.table_definition.name}")
+
+        sql_str = f"TRUNCATE {self.table_definition.name};"
+        self.resource.exec_sql_no_fetch(sql_str)
+        self.resource.exec_sql_no_fetch(f"DESCRIBE {self.table_definition.name}")
+
+    def insert(self, data: DataFrame):
+        """DuckDB insert method"""
+
+        self.resource.import_from_pandas(table_name = self.table_definition.name, df = data)
+
+
+    def select(self, columns: Optional[tuple] = None, where: Optional[str] = None, extra: Optional[str] = None) -> Optional[DataFrame]:
+        """DuckDB select method"""
+
+        if columns:
+            columns_str = ", ".join(name for name in columns)
+        else:
+            columns_str = ", ".join(name for name in self.table_definition.columns)
+        select_str = f"SELECT\n  {columns_str}\n"
+        from_str = f"FROM {self.table_definition.name}"
+        if where:
+            where_str = "\nWHERE " + where
+        else:
+            where_str = ''
+        sql_str = f"{select_str}{from_str}{where_str}"
+
+        return self.resource.select_as_df(sql = sql_str)
+
+
 def generate_MTable(table_definition: TableDefinition, resource: ConfigurableResource) -> MTable:
     """MTable generator"""
 
@@ -210,6 +250,8 @@ def generate_MTable(table_definition: TableDefinition, resource: ConfigurableRes
         mtable = MTable_CH(table_definition, resource)
     elif resource.__class__ is Opensearch:
         mtable = MTable_OS(table_definition, resource)
+    elif resource.__class__ is DuckDB:
+        mtable = MTable_DD(table_definition, resource)
     else:
         raise NotImplementedError
     

@@ -2,6 +2,7 @@ from dagster import EnvVar
 from .postgres_db import PostgresDB
 from .clickhouse_db import ClickhouseDB
 from .opensearch import Opensearch
+from .duck_db import DuckDB
 
 # List of all project resources
 PROJECT_RESOURCES = {
@@ -25,4 +26,5 @@ PROJECT_RESOURCES = {
         host = 'opensearch',
         port = 9200
     ),
+    "duckdb": DuckDB(),
 }
