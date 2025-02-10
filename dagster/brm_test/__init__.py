@@ -7,7 +7,7 @@ from .jobs import PROJECT_JOBS
 defs = Definitions(
     assets=PROJECT_ASSETS,
     resources=PROJECT_RESOURCES,
-    jobs=PROJECT_JOBS,
+    # jobs=PROJECT_JOBS,
     # schedules = PROJECT_SCHEDULES,
     # sensors = PROJECT_SENSORS,
 )
