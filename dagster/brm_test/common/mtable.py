@@ -21,18 +21,19 @@ class TableDefinition:
     def columns(self) -> tuple:
         return tuple(self.column_definitions.keys())
 
+
 class MTable:
     """Base MTable class"""
 
     def __init__(self, table_definition: TableDefinition, resource: ConfigurableResource):
         self.__table_definition = table_definition
         self.__resource = resource
-    
+
     @property
     def table_definition(self) -> TableDefinition:
 
         return self.__table_definition
-    
+
     @property
     def resource(self) -> ConfigurableResource:
 
@@ -42,17 +43,17 @@ class MTable:
         """Base create method"""
 
         raise NotImplementedError
-    
+
     def truncate(self) -> None:
         """Base truncate method"""
 
         raise NotImplementedError
-    
+
     def insert(self, data: DataFrame) -> None:
         """Base insert method"""
 
         raise NotImplementedError
-    
+
     def select(self, columns: Optional[tuple] = None, where: Optional[str] = None, extra: Optional[str] = None) -> Optional[DataFrame]:
         """Base select method"""
 
@@ -64,8 +65,9 @@ class MTable_PG(MTable):
 
     def create(self) -> None:
         """PostgreSQL create method"""
-        
-        columns_str = ",\n  ".join(f'{name} {specs}' for name, specs in self.table_definition.column_definitions.items())
+
+        columns_str = ",\n  ".join(
+            f'{name} {specs}' for name, specs in self.table_definition.column_definitions.items())
         create_str = f"CREATE TABLE IF NOT EXISTS {self.table_definition.name} (\n  {columns_str}\n)"
         sql_str = f"{create_str};"
         self.resource.exec_sql_no_fetch(sql_str)
@@ -83,7 +85,8 @@ class MTable_PG(MTable):
         insert_str = f"INSERT INTO {self.table_definition.name}\n  ({columns_str})\nVALUES %s"
         sql_str = insert_str
 
-        self.resource.exec_insert(sql = sql_str, values = list(data.itertuples(index = False, name = None)))
+        self.resource.exec_insert(sql=sql_str, values=list(
+            data.itertuples(index=False, name=None)))
 
     def select(self, columns: Optional[tuple] = None, where: Optional[str] = None, extra: Optional[str] = None) -> Optional[DataFrame]:
         """PostgreSQL select method"""
@@ -91,7 +94,8 @@ class MTable_PG(MTable):
         if columns:
             columns_str = ", ".join(name for name in columns)
         else:
-            columns_str = ", ".join(name for name in self.table_definition.columns)
+            columns_str = ", ".join(
+                name for name in self.table_definition.columns)
         select_str = f"SELECT\n  {columns_str}\n"
         from_str = f"FROM {self.table_definition.name}"
         if where:
@@ -103,7 +107,7 @@ class MTable_PG(MTable):
         else:
             extra_str = ''
         sql_str = f"{select_str}{from_str}{where_str}{extra_str};"
-        result = self.resource.exec_sql_dict_cursor(sql = sql_str)
+        result = self.resource.exec_sql_dict_cursor(sql=sql_str)
         if result:
             return DataFrame.from_dict(result)
         else:
@@ -115,8 +119,9 @@ class MTable_CH(MTable):
 
     def create(self) -> None:
         """Clickhouse create method"""
-        
-        columns_str = ",\n  ".join(f'{name} {specs}' for name, specs in self.table_definition.column_definitions.items())
+
+        columns_str = ",\n  ".join(
+            f'{name} {specs}' for name, specs in self.table_definition.column_definitions.items())
         create_str = f"CREATE TABLE IF NOT EXISTS {self.table_definition.name} (\n  {columns_str}\n)"
         if self.table_definition.extra:
             create_str = f'{create_str}\n{self.table_definition.extra}'
@@ -125,7 +130,7 @@ class MTable_CH(MTable):
 
         sql_str = f"TRUNCATE {self.table_definition.name};"
         self.resource.exec_command(sql_str)
-    
+
     def truncate(self) -> None:
         """Clickhouse truncate method"""
 
@@ -136,7 +141,8 @@ class MTable_CH(MTable):
         """Clickhouse insert method"""
 
         column_names = list(name for name in data.columns)
-        self.resource.exec_insert(table_name = self.table_definition.name, values = list(data.itertuples(index = False, name = None)), column_names = column_names)
+        self.resource.exec_insert(table_name=self.table_definition.name, values=list(
+            data.itertuples(index=False, name=None)), column_names=column_names)
 
     def select(self, columns: Optional[tuple] = None, where: Optional[str] = None, extra: Optional[str] = None) -> Optional[DataFrame]:
         """Clickhouse select method"""
@@ -144,7 +150,8 @@ class MTable_CH(MTable):
         if columns:
             columns_str = ", ".join(name for name in columns)
         else:
-            columns_str = ", ".join(name for name in self.table_definition.columns)
+            columns_str = ", ".join(
+                name for name in self.table_definition.columns)
         select_str = f"SELECT\n  {columns_str}\n"
         from_str = f"FROM {self.table_definition.name}"
         if where:
@@ -156,24 +163,24 @@ class MTable_CH(MTable):
         else:
             extra_str = ''
         sql_str = f"{select_str}{from_str}{where_str}{extra_str};"
-        return self.resource.exec_query(sql = sql_str)
-    
+        return self.resource.exec_query(sql=sql_str)
+
 
 class MTable_OS(MTable):
     """MTable implementation for OpenSearch"""
 
     def create(self) -> None:
         """OpenSearch create method"""
-        
+
         self.resource.create(
-            index_name = self.table_definition.name,
-            properties = self.table_definition.column_definitions
+            index_name=self.table_definition.name,
+            properties=self.table_definition.column_definitions
         )
-    
+
     def truncate(self) -> None:
         """OpenSearch truncate method"""
 
-        self.resource.delete(index_name = self.table_definition.name)
+        self.resource.delete(index_name=self.table_definition.name)
 
     def insert(self, data: DataFrame):
         """OpenSearch insert method"""
@@ -186,8 +193,8 @@ class MTable_OS(MTable):
             document["_id"] = id
 
         self.resource.bulk_index(
-            index_name = self.table_definition.name,
-            documents = documents,
+            index_name=self.table_definition.name,
+            documents=documents,
         )
 
     def select(self, columns: Optional[tuple] = None, where: Optional[str] = None, extra: Optional[str] = None) -> Optional[DataFrame]:
@@ -196,7 +203,8 @@ class MTable_OS(MTable):
         if columns:
             columns_str = ", ".join(name for name in columns)
         else:
-            columns_str = ", ".join(name for name in self.table_definition.columns)
+            columns_str = ", ".join(
+                name for name in self.table_definition.columns)
         select_str = f"SELECT\n  {columns_str}\n"
         from_str = f"FROM {self.table_definition.name}"
         if where:
@@ -205,7 +213,7 @@ class MTable_OS(MTable):
             where_str = ''
         sql_str = f"{select_str}{from_str}{where_str}"
 
-        output = self.resource.exec_sql(sql = sql_str)
+        output = self.resource.exec_sql(sql=sql_str)
         ast_out = ast.literal_eval(output)
 
         try:
@@ -225,12 +233,13 @@ class MTable_DD(MTable):
 
     def create(self) -> None:
         """DuckDB create method"""
-        
-        columns_str = ",\n  ".join(f'{name} {specs}' for name, specs in self.table_definition.column_definitions.items())
+
+        columns_str = ",\n  ".join(
+            f'{name} {specs}' for name, specs in self.table_definition.column_definitions.items())
         create_str = f"CREATE TABLE IF NOT EXISTS {self.table_definition.name} (\n  {columns_str}\n)"
         sql_str = f"{create_str};"
         self.resource.exec_sql_no_fetch(sql_str)
-    
+
     def truncate(self) -> None:
         """DuckDB truncate method"""
 
@@ -240,8 +249,8 @@ class MTable_DD(MTable):
     def insert(self, data: DataFrame):
         """DuckDB insert method"""
 
-        self.resource.import_from_pandas(table_name = self.table_definition.name, df = data)
-
+        self.resource.import_from_pandas(
+            table_name=self.table_definition.name, df=data)
 
     def select(self, columns: Optional[tuple] = None, where: Optional[str] = None, extra: Optional[str] = None) -> Optional[DataFrame]:
         """DuckDB select method"""
@@ -249,7 +258,8 @@ class MTable_DD(MTable):
         if columns:
             columns_str = ", ".join(name for name in columns)
         else:
-            columns_str = ", ".join(name for name in self.table_definition.columns)
+            columns_str = ", ".join(
+                name for name in self.table_definition.columns)
         select_str = f"SELECT\n  {columns_str}\n"
         from_str = f"FROM {self.table_definition.name}"
         if where:
@@ -258,7 +268,7 @@ class MTable_DD(MTable):
             where_str = ''
         sql_str = f"{select_str}{from_str}{where_str}"
 
-        return self.resource.select_as_df(sql = sql_str)
+        return self.resource.select_as_df(sql=sql_str)
 
 
 def generate_MTable(table_definition: TableDefinition, resource: ConfigurableResource) -> MTable:
@@ -274,5 +284,5 @@ def generate_MTable(table_definition: TableDefinition, resource: ConfigurableRes
         mtable = MTable_DD(table_definition, resource)
     else:
         raise NotImplementedError
-    
+
     return mtable

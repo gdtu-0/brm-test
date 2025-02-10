@@ -7,24 +7,24 @@ from .duck_db import DuckDB
 # List of all project resources
 PROJECT_RESOURCES = {
     "postgres_db": PostgresDB(
-        dbname = EnvVar('POSTGRES_DB'),
-        username = EnvVar('POSTGRES_USER'),
-        password = EnvVar('POSTGRES_PASSWORD'),
-        host = 'postgres',
-        port = 5432
+        dbname=EnvVar('POSTGRES_DB'),
+        username=EnvVar('POSTGRES_USER'),
+        password=EnvVar('POSTGRES_PASSWORD'),
+        host='postgres',
+        port=5432
     ),
     "clickhouse_db": ClickhouseDB(
-        database = EnvVar('CLICKHOUSE_DB'),
-        username = EnvVar('CLICKHOUSE_USER'),
-        password = EnvVar('CLICKHOUSE_PASSWORD'),
-        host = 'clickhouse',
-        port = 8123
+        database=EnvVar('CLICKHOUSE_DB'),
+        username=EnvVar('CLICKHOUSE_USER'),
+        password=EnvVar('CLICKHOUSE_PASSWORD'),
+        host='clickhouse',
+        port=8123
     ),
     "opensearch": Opensearch(
-        username = 'admin',
-        password = EnvVar('OPENSEARCH_INITIAL_ADMIN_PASSWORD'),
-        host = 'opensearch',
-        port = 9200
+        username='admin',
+        password=EnvVar('OPENSEARCH_INITIAL_ADMIN_PASSWORD'),
+        host='opensearch',
+        port=9200
     ),
     "duckdb": DuckDB(),
 }

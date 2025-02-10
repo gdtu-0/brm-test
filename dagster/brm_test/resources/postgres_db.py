@@ -1,6 +1,6 @@
 import functools
-import psycopg2 # type: ignore
-import psycopg2.extras # type: ignore
+import psycopg2  # type: ignore
+import psycopg2.extras  # type: ignore
 from typing import Optional
 from dagster import ConfigurableResource
 
@@ -8,13 +8,12 @@ from dagster import ConfigurableResource
 class PostgresDB(ConfigurableResource):
     """Dagster resource definition for Postgres database"""
 
-    dbname:str
-    username:str
-    password:str
-    host:str
-    port:int
-    __connection:Optional[object]=None
-
+    dbname: str
+    username: str
+    password: str
+    host: str
+    port: int
+    __connection: Optional[object] = None
 
     def handle_connection(function):
         """Wrapper for handling connection"""
@@ -26,19 +25,18 @@ class PostgresDB(ConfigurableResource):
             # invoke del for resource object witch will close the connection
             if not self.__connection:
                 self.__connection = psycopg2.connect(
-                    dbname = self.dbname,
-                    user = self.username,
-                    password = self.password,
-                    host = self.host,
-                    port = self.port
+                    dbname=self.dbname,
+                    user=self.username,
+                    password=self.password,
+                    host=self.host,
+                    port=self.port
                 )
             value = function(self, *args, **kwargs)
-            return(value)
+            return (value)
         return wrapper_handle_connection
 
-
     @handle_connection
-    def table_exists(self, table_name:str) -> bool:
+    def table_exists(self, table_name: str) -> bool:
         """Check if table exists in database"""
 
         sql_str = f"SELECT EXISTS (\n\tSELECT FROM information_schema.tables WHERE table_name = \'{table_name}\'\n);"
@@ -47,8 +45,7 @@ class PostgresDB(ConfigurableResource):
         with self.__connection.cursor() as cursor:
             cursor.execute(sql_str)
             exists = cursor.fetchone()[0]
-        return(exists)
-    
+        return (exists)
 
     @handle_connection
     def exec_sql_dict_cursor(self, sql: str) -> Optional[list]:
@@ -63,8 +60,7 @@ class PostgresDB(ConfigurableResource):
                 result = []
                 for row in responce:
                     result.append(dict(row))
-                return(result)
-    
+                return (result)
 
     @handle_connection
     def exec_sql_no_fetch(self, sql: str) -> None:
@@ -73,13 +69,12 @@ class PostgresDB(ConfigurableResource):
         with self.__connection.cursor() as cursor:
             cursor.execute(sql)
             self.__connection.commit()
-    
 
     @handle_connection
     def exec_insert(self, sql: str, values: list[tuple]):
         """Special case for insert statement"""
 
         with self.__connection.cursor() as cursor:
-            psycopg2.extras.execute_values (
+            psycopg2.extras.execute_values(
                 cursor, sql, values, template=None, page_size=100)
             self.__connection.commit()

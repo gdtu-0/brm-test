@@ -2,8 +2,8 @@ from .mtable import TableDefinition
 
 TABLE_DEFINITIONS = {
     'mapping': TableDefinition(
-        name = 'mapping',
-        column_definitions = {
+        name='mapping',
+        column_definitions={
             'map_rule_id': 'numeric',
             'map_rule_row': 'numeric',
             'where_cond': 'varchar',
@@ -54,8 +54,8 @@ TABLE_DEFINITIONS = {
         }
     ),
     'pg_data': TableDefinition(
-        name = 'pg_data',
-        column_definitions = {
+        name='pg_data',
+        column_definitions={
             'fisc_period': 'varchar(7)',
             'comp_code': 'varchar(4)',
             'account': 'varchar(10)',
@@ -71,8 +71,8 @@ TABLE_DEFINITIONS = {
         }
     ),
     'ch_data': TableDefinition(
-        name = 'ch_data',
-        column_definitions = {
+        name='ch_data',
+        column_definitions={
             'fisc_period': 'LowCardinality(String)',
             'comp_code': 'LowCardinality(String)',
             'account': 'LowCardinality(String)',
@@ -86,11 +86,11 @@ TABLE_DEFINITIONS = {
             'currency': 'LowCardinality(String)',
             'amount': 'Decimal64(3)',
         },
-        extra = 'ENGINE = MergeTree()\nORDER BY (fisc_period, comp_code, account)'
+        extra='ENGINE = MergeTree()\nORDER BY (fisc_period, comp_code, account)'
     ),
     'os_data': TableDefinition(
-        name = 'os_data',
-        column_definitions = {
+        name='os_data',
+        column_definitions={
             'fisc_period': {"type": "keyword"},
             'comp_code': {"type": "keyword"},
             'account': {"type": "keyword"},
@@ -106,8 +106,8 @@ TABLE_DEFINITIONS = {
         }
     ),
     'dd_data': TableDefinition(
-        name = 'dd_data',
-        column_definitions = {
+        name='dd_data',
+        column_definitions={
             'fisc_period': 'varchar(7)',
             'comp_code': 'varchar(4)',
             'account': 'varchar(10)',

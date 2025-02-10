@@ -2,6 +2,7 @@ from pandas import Series
 from typing import Optional
 from ..common import TABLE_DEFINITIONS
 
+
 def __generate_where_cond(k: str, v: str) -> Optional[str]:
     """Generate where condition"""
 
@@ -32,33 +33,39 @@ def __generate_where_cond(k: str, v: str) -> Optional[str]:
         if len(l_eq) == 1:
             cond_str = cond_str + f'{k} = \'{l_eq[0]}\''
         else:
-            cond_str = cond_str + f'{k} IN (\'' + '\',\''.join(e for e in l_eq) + '\')'
+            cond_str = cond_str + \
+                f'{k} IN (\'' + '\',\''.join(e for e in l_eq) + '\')'
     if l_cp:
         if l_eq:
             cond_str = cond_str + ' OR '
         if len(l_cp) == 1:
             cond_str = cond_str + f'{k} LIKE \'{l_cp[0]}\''
         else:
-            cond_str = cond_str + f'({k} LIKE \'' + f'\' OR {k} LIKE \''.join(e for e in l_cp) + '\')'
+            cond_str = cond_str + \
+                f'({k} LIKE \'' + f'\' OR {k} LIKE \''.join(e for e in l_cp) + '\')'
     if l_ne:
         if l_eq or l_cp:
             cond_str = cond_str + ' AND '
         if len(l_ne) == 1:
             cond_str = cond_str + f'{k} <> \'{l_ne[0]}\''
         else:
-            cond_str = cond_str + f'{k} NOT IN (\'' + '\',\''.join(e for e in l_ne) + '\')'
+            cond_str = cond_str + \
+                f'{k} NOT IN (\'' + '\',\''.join(e for e in l_ne) + '\')'
     if l_np:
         if l_eq or l_cp or l_ne:
             cond_str = cond_str + ' AND '
         if len(l_np) == 1:
             cond_str = cond_str + f'{k} NOT LIKE \'{l_np[0]}\''
         else:
-            cond_str = cond_str + f'({k} NOT LIKE \'' + f'\' AND {k} NOT LIKE \''.join(e for e in l_np) + '\')'
+            cond_str = cond_str + \
+                f'({k} NOT LIKE \'' + \
+                f'\' AND {k} NOT LIKE \''.join(e for e in l_np) + '\')'
     # print(f'\nk: {k}\nv: {v}\nl_eq: {l_eq}\nl_cp: {l_cp}\nl_ne: {l_ne}\nl_np: {l_np}\ncond_str: {cond_str}')
     if cond_str != '':
         return cond_str
     else:
         return None
+
 
 def translate_to_where_cond(mapping_row: Series) -> str:
     """Translate mapping row to SQL where condition"""

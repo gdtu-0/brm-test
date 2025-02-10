@@ -16,11 +16,13 @@ def _list_dir(relpath: str) -> list[str]:
         out.append(os.path.normpath(f'{str(path)}{str(file)}'))
     return out
 
+
 @asset
 def load_sapmle_data(context: AssetExecutionContext, postgres_db: PostgresDB) -> None:
     """Load data sample as Dataframe"""
 
-    table = generate_MTable(table_definition = TABLE_DEFINITIONS['pg_data'], resource = postgres_db)
+    table = generate_MTable(
+        table_definition=TABLE_DEFINITIONS['pg_data'], resource=postgres_db)
     table.create()
     table.truncate()
     relpath = '../data/source_data/'
@@ -30,11 +32,13 @@ def load_sapmle_data(context: AssetExecutionContext, postgres_db: PostgresDB) ->
         df = df.fillna(value='')
         table.insert(df)
 
+
 @asset
 def load_mapping(context: AssetExecutionContext, postgres_db: PostgresDB) -> None:
     """Load mapping file"""
-    
-    table = generate_MTable(table_definition = TABLE_DEFINITIONS['mapping'], resource = postgres_db)
+
+    table = generate_MTable(
+        table_definition=TABLE_DEFINITIONS['mapping'], resource=postgres_db)
     table.create()
     table.truncate()
     relpath = '../data/mapping/'
@@ -49,15 +53,18 @@ def load_mapping(context: AssetExecutionContext, postgres_db: PostgresDB) -> Non
         df[where_cond_column_name] = pd.Series(conds)
         table.insert(df)
 
+
 @asset(deps=[load_sapmle_data, load_mapping])
 def source_data_loaded(context: AssetExecutionContext, postgres_db: PostgresDB) -> None:
     """Source data loaded"""
 
-    data_table = generate_MTable(table_definition = TABLE_DEFINITIONS['pg_data'], resource = postgres_db)
-    mapping_table = generate_MTable(table_definition = TABLE_DEFINITIONS['mapping'], resource = postgres_db)
+    data_table = generate_MTable(
+        table_definition=TABLE_DEFINITIONS['pg_data'], resource=postgres_db)
+    mapping_table = generate_MTable(
+        table_definition=TABLE_DEFINITIONS['mapping'], resource=postgres_db)
 
-    data_test_df = data_table.select(columns = '*', extra = 'LIMIT 1')
-    mapping_test_df = mapping_table.select(columns = '*', extra = 'LIMIT 1')
+    data_test_df = data_table.select(columns='*', extra='LIMIT 1')
+    mapping_test_df = mapping_table.select(columns='*', extra='LIMIT 1')
 
     print(data_test_df)
     print(mapping_test_df)

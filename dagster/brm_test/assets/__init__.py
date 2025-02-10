@@ -5,20 +5,20 @@ from .load_source import (
 )
 
 from .pg_apply_mapping import (
-    pg_apply_mapping,    
+    pg_apply_mapping,
 )
 
-from .ch_apply_mapping import(
+from .ch_apply_mapping import (
     ch_load_data,
     ch_apply_mapping,
 )
 
-from .os_apply_mapping import(
+from .os_apply_mapping import (
     os_load_data,
     os_apply_mapping,
 )
 
-from .dd_apply_mapping import(
+from .dd_apply_mapping import (
     dd_load_data,
     dd_apply_mapping,
 )

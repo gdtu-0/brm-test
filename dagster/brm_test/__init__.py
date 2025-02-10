@@ -5,9 +5,9 @@ from .jobs import PROJECT_JOBS
 
 # Set dagster definitions
 defs = Definitions(
-    assets = PROJECT_ASSETS,
-    resources = PROJECT_RESOURCES,
-    jobs = PROJECT_JOBS,
+    assets=PROJECT_ASSETS,
+    resources=PROJECT_RESOURCES,
+    jobs=PROJECT_JOBS,
     # schedules = PROJECT_SCHEDULES,
     # sensors = PROJECT_SENSORS,
 )
