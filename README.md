@@ -6,9 +6,16 @@ This repo is a test project intended to compare performance of different db and 
 
 ### Transactional accounting data
 
-For testing purposes a dataset of roughly 450 000 records (~48 Mb) of accounting data was generated. For security reasons this dataset is not included in repo files.
+A dataset of roughly 450 000 records (~48 Mb) of accounting data was generated. For security reasons this dataset is not included in repo files.
 
 ![Image](/.images/src_accounting_data.png)
+
+### Transformation rules
+
+User-defined transformation rules are defined in table format. The strucutre containes several src* fields for data selection and trg* fields for mapping selected data to target analytics.
+For security reasons transformation rules are not included in repo files.
+
+![Image](/.images/src_mapping_rules.png)
 
 ## DB and engines
 1. PostgreSQL
