@@ -122,4 +122,13 @@ TABLE_DEFINITIONS = {
             'amount': 'decimal(17,2)',
         }
     ),
+    'log_data': TableDefinition(
+        name='log_data',
+        column_definitions={
+            'db': 'varchar',
+            'ts_begin': 'timestamp without time zone',
+            'ts_end': 'timestamp without time zone',
+            'duration': 'numeric',
+        }
+    ),
 }
