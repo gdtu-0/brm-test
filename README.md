@@ -12,12 +12,12 @@ A dataset of roughly 450 000 records (~48 Mb) of accounting data was generated. 
 
 ### Transformation rules
 
-User-defined transformation rules are defined in table format. The strucutre containes several src* fields for data selection and trg* fields for mapping selected data to target analytics. Enumerations, masks and exceptions are supported.
+User-defined transformation rules are defined in table format. The strucutre containes several src* fields for data selection and trg* fields for mapping selected data to target analytics. Enumerations, masks and exceptions are supported. Transformation rules table contains around 31 000 records (11 Mb).
 For security reasons transformation rules are not included in repo files.
 
 ![Image](/.images/src_mapping_rules.png)
 
-## Parsing user-defined rules
+### Parsing user-defined rules
 
 Workflow includes parsing user-defined transformation rules to SQL WHERE conditions. This is an exaple of generated WHERE condition:
 
@@ -30,11 +30,40 @@ WHERE (account LIKE '05307%')
     )
 ```
 
-## DB and engines
+## Workflow
+
+General worflow is implemented using Dagster. First it loads source data and mapping files from local folder, then applies mapping in different db and engines.
+
+![Image](/.images/workflow.png)
+
+### DB and engines
+
 1. PostgreSQL
+
+PostgreSQL is used without any optimizations.
+
 2. Clickhouse
+
+Fields in data table are defined with LowCardinality option to boost select performance.
+
 3. Opensearch
+
+Fields in Opensearch index are defined as keyword becasue full-featured text search is not needed for this task. Opensearch SQL interface is used for querying data.
+
 4. DuckDB
+
+DuckDB is used without any optimizations.
+
+All the tesing was done in docker environment is single-instance mode.
+
+## Results
+
+Opensearch was not able to handle most diverse where conditions due to memory limitations for statement parsing.
+Clickhouse is about 2x faster then PostgreSQL in this type of queries. DuckDB shows slightly better performance then Clickhouse, but in cluster scenarios Clickhose is expected to show better performance.
+
+Average task duration in seconds is shown below.
+
+![Image](/.images/results.png)
 
 Opensearch --------------------------
 
