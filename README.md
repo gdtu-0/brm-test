@@ -1,9 +1,20 @@
 # brm-test
-## Modes
+
+This repo is a test project intended to compare performance of different db and search engines in a real business case of applying user-defined transformation rules to accounting transactional data.
+
+## Source data
+
+### Transactional accounting data
+
+For testing purposes a dataset of roughly 450 000 records (~48 Mb) of accounting data was generated. For security reasons this dataset is not included in repo files.
+
+![Image](/.images/src_accounting_data.png)
+
+## DB and engines
 1. PostgreSQL
 2. Clickhouse
 3. Opensearch
-4. Pandas+DuckDB
+4. DuckDB
 
 Opensearch --------------------------
 
