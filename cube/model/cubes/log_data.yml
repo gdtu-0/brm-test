@@ -1,0 +1,26 @@
+cubes:
+  - name: log_data
+    sql_table: public.log_data
+    data_source: default
+
+    joins: []
+
+    dimensions:
+
+      - name: db
+        sql: db
+        type: string
+      
+      - name: ts_begin
+        sql: ts_begin
+        type: time
+
+    measures:
+      - name: avg_duration
+        sql: duration
+        type: avg
+
+    pre_aggregations:
+      # Pre-aggregation definitions go here.
+      # Learn more in the documentation: https://cube.dev/docs/caching/pre-aggregations/getting-started
+
