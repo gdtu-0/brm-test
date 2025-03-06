@@ -95,7 +95,6 @@ services:
   cube:
     image: cubejs/cube:latest
     container_name: cube
-    restart: always
     environment:
       - CUBEJS_DB_HOST=postgres
       - CUBEJS_DB_PORT=5432
